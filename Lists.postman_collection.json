@@ -1,0 +1,2424 @@
+{
+	"info": {
+		"_postman_id": "a85998c2-0327-4fa0-a311-428addb2def5",
+		"name": "Lists",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "10146112"
+	},
+	"item": [
+		{
+			"name": "getLists",
+			"item": [
+				{
+					"name": "getAllLists",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"const folderId = pm.collectionVariables.get(\"folder_id\");\r",
+									"const randomName1 = pm.variables.replaceIn(\"{{$randomFirstName}}\");\r",
+									"const randomName2 = pm.variables.replaceIn(\"{{$randomCity}}\");\r",
+									"const url_data = pm.environment.get(\"url\");\r",
+									"\r",
+									"console.info(\"[INFO] Initiating list creation process\");\r",
+									"\r",
+									"pm.sendRequest({\r",
+									"    url: `${url_data}/folder/${folderId}/list`,\r",
+									"    method: \"POST\",\r",
+									"    header: {\r",
+									"        \"Authorization\": pm.environment.get(\"token\"),\r",
+									"        \"Content-Type\": \"application/json\"\r",
+									"    },\r",
+									"    body: {\r",
+									"        mode: \"raw\",\r",
+									"        raw: JSON.stringify({\"name\": randomName1})\r",
+									"    }\r",
+									"}, function (err, res) {\r",
+									"    if (err) {\r",
+									"        console.error(\"[ERROR] Pre-request error during List 1 creation:\", err);\r",
+									"    } else if (res.code !== 200) {\r",
+									"        console.error(`[ERROR] Unexpected response code during List 1 creation: ${res.code}`, res.text());\r",
+									"    } else {\r",
+									"        const jsonData = res.json();\r",
+									"        pm.collectionVariables.set(\"list1_id\", jsonData.id);\r",
+									"        console.log(`[SUCCESS] List 1 was created. list_id: ${jsonData.id}, status code: ${res.code}`);\r",
+									"    }\r",
+									"});\r",
+									"\r",
+									"pm.sendRequest({\r",
+									"    url: `${url_data}/folder/${folderId}/list`,\r",
+									"    method: \"POST\",\r",
+									"    header: {\r",
+									"        \"Authorization\": pm.environment.get(\"token\"),\r",
+									"        \"Content-Type\": \"application/json\"\r",
+									"    },\r",
+									"    body: {\r",
+									"        mode: \"raw\",\r",
+									"        raw: JSON.stringify({\"name\": randomName2})\r",
+									"    }\r",
+									"}, function (err, res) {\r",
+									"    if (err) {\r",
+									"        console.error(\"[ERROR] Pre-request error during List 2 creation:\", err);\r",
+									"    } else if (res.code !== 200) {\r",
+									"        console.error(`[ERROR] Unexpected response code during List 2 creation: ${res.code}`, res.text());\r",
+									"    } else {\r",
+									"        const jsonData = res.json();\r",
+									"        pm.collectionVariables.set(\"list2_id\", jsonData.id);\r",
+									"        console.log(`[SUCCESS] List 2 was created. list_id: ${jsonData.id}, status code: ${res.code}`);\r",
+									"    }\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const url_data = pm.environment.get(\"url\");\r",
+									"const list1_id = pm.collectionVariables.get(\"list1_id\");\r",
+									"const list2_id = pm.collectionVariables.get(\"list2_id\");\r",
+									"\r",
+									"const Ajv = require('ajv');\r",
+									"const ajv = new Ajv();\r",
+									"\r",
+									"const schema = {\r",
+									"    type: \"object\",\r",
+									"    properties: {\r",
+									"        lists: {\r",
+									"            type: \"array\",\r",
+									"            items: {\r",
+									"                type: \"object\",\r",
+									"                properties: {\r",
+									"                    id: {\r",
+									"                        type: \"string\"\r",
+									"                    },\r",
+									"                    name: {\r",
+									"                        type: \"string\"\r",
+									"                    },\r",
+									"                    orderindex: {\r",
+									"                        type: \"integer\"\r",
+									"                    },\r",
+									"                    content: {\r",
+									"                        type: \"string\"\r",
+									"                    },\r",
+									"                    status: {\r",
+									"                        anyOf: [{\r",
+									"                                type: \"null\"\r",
+									"                            },\r",
+									"                            {\r",
+									"                                type: \"object\",\r",
+									"                                properties: {\r",
+									"                                    status: {\r",
+									"                                        type: \"string\"\r",
+									"                                    },\r",
+									"                                    color: {\r",
+									"                                        type: \"string\"\r",
+									"                                    },\r",
+									"                                    hide_label: {\r",
+									"                                        type: \"boolean\"\r",
+									"                                    }\r",
+									"                                },\r",
+									"                                required: [\"status\", \"color\", \"hide_label\"]\r",
+									"                            }\r",
+									"                        ]\r",
+									"                    },\r",
+									"                    priority: {\r",
+									"                        anyOf: [{\r",
+									"                                type: \"null\"\r",
+									"                            },\r",
+									"                            {\r",
+									"                                type: \"object\",\r",
+									"                                properties: {\r",
+									"                                    priority: {\r",
+									"                                        type: \"string\"\r",
+									"                                    },\r",
+									"                                    color: {\r",
+									"                                        type: \"string\"\r",
+									"                                    }\r",
+									"                                },\r",
+									"                                required: [\"priority\", \"color\"]\r",
+									"                            }\r",
+									"                        ]\r",
+									"                    },\r",
+									"                    assignee: {\r",
+									"                        type: [\"integer\", \"null\"]\r",
+									"                    },\r",
+									"                    task_count: {\r",
+									"                        type: \"integer\"\r",
+									"                    },\r",
+									"                    due_date: {\r",
+									"                        type: [\"integer\", \"null\", \"string\"]\r",
+									"                    },\r",
+									"                    start_date: {\r",
+									"                        type: [\"integer\", \"null\", \"string\"]\r",
+									"                    },\r",
+									"                    folder: {\r",
+									"                        type: \"object\",\r",
+									"                        properties: {\r",
+									"                            id: {\r",
+									"                                type: \"string\"\r",
+									"                            },\r",
+									"                            name: {\r",
+									"                                type: \"string\"\r",
+									"                            },\r",
+									"                            hidden: {\r",
+									"                                type: \"boolean\"\r",
+									"                            },\r",
+									"                            access: {\r",
+									"                                type: \"boolean\"\r",
+									"                            }\r",
+									"                        },\r",
+									"                        required: [\"id\", \"name\", \"hidden\", \"access\"]\r",
+									"                    },\r",
+									"                    space: {\r",
+									"                        type: \"object\",\r",
+									"                        properties: {\r",
+									"                            id: {\r",
+									"                                type: \"string\"\r",
+									"                            },\r",
+									"                            name: {\r",
+									"                                type: \"string\"\r",
+									"                            },\r",
+									"                            access: {\r",
+									"                                type: \"boolean\"\r",
+									"                            }\r",
+									"                        },\r",
+									"                        required: [\"id\", \"name\", \"access\"]\r",
+									"                    },\r",
+									"                    archived: {\r",
+									"                        type: \"boolean\"\r",
+									"                    },\r",
+									"                    override_statuses: {\r",
+									"                        type: \"boolean\"\r",
+									"                    },\r",
+									"                    permission_level: {\r",
+									"                        type: \"string\"\r",
+									"                    }\r",
+									"                },\r",
+									"                required: [\r",
+									"                    \"id\", \"name\", \"orderindex\", \"content\", \"status\", \"priority\", \"assignee\", \"task_count\", \"due_date\",\r",
+									"                    \"start_date\", \"folder\", \"space\", \"archived\", \"override_statuses\", \"permission_level\"\r",
+									"                ]\r",
+									"            }\r",
+									"        }\r",
+									"    },\r",
+									"    required: [\"lists\"]\r",
+									"};\r",
+									"\r",
+									"const validate = ajv.compile(schema);\r",
+									"const response = pm.response.json();\r",
+									"\r",
+									"pm.test(\"Schema is valid\", function () {\r",
+									"   const valid = validate(response);\r",
+									"   pm.expect(valid, JSON.stringify(validate.errors)).to.be.true;\r",
+									"   console.log(`[SUCCESS] Schema is valid`);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"GET status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"    console.log(`[SUCCESS] GET status code is 200`);\r",
+									"});\r",
+									"\r",
+									"response.lists.forEach(item => {\r",
+									"  console.log(`[DEBUG] List information:`);\r",
+									"  console.log(`list id: ${item.id}`);\r",
+									"  console.log(`folder id: ${item.folder.id}`);\r",
+									"  console.log(`space id: ${item.space.id}`);\r",
+									"});\r",
+									"\r",
+									"if (list1_id) {\r",
+									"    console.info(\"[INFO] Sending DELETE request to remove the list 1\");\r",
+									"    \r",
+									"    pm.sendRequest({\r",
+									"    url: `${url_data}/list/${list1_id}`,\r",
+									"    method: \"DELETE\",\r",
+									"    header: {\r",
+									"        \"Authorization\" : pm.environment.get(\"token\")\r",
+									"    }\r",
+									"    }, function (err, res) {\r",
+									"        if (err) {\r",
+									"            console.error(\"[ERROR] Request error:\", err);\r",
+									"        } else if (res.code !== 200) {\r",
+									"            console.error(`[ERROR] Failed to delete list 1. Status code: ${res.code}`);\r",
+									"        } else {\r",
+									"            console.log(`[SUCCESS] List 1 was deleted. Status code: ${res.code}`);\r",
+									"        }\r",
+									"        pm.collectionVariables.unset(\"list1_id\");\r",
+									"    });\r",
+									"} else {\r",
+									"    console.error(\"[ERROR] Failed to send DELETE request: list1_id is undefined.\");\r",
+									"}\r",
+									"\r",
+									"if (list2_id) {\r",
+									"    console.info(\"[INFO] Sending DELETE request to remove the list 2\");\r",
+									"    \r",
+									"    pm.sendRequest({\r",
+									"    url: `${url_data}/list/${list2_id}`,\r",
+									"    method: \"DELETE\",\r",
+									"    header: {\r",
+									"        \"Authorization\" : pm.environment.get(\"token\")\r",
+									"    }\r",
+									"    }, function (err, res) {\r",
+									"        if (err) {\r",
+									"            console.error(\"[ERROR] Request error:\", err);\r",
+									"        } else if (res.code !== 200) {\r",
+									"            console.error(`[ERROR] Failed to delete list 2. Status code: ${res.code}`);\r",
+									"        } else {\r",
+									"            console.log(`[SUCCESS] List 2 was deleted. Status code: ${res.code}`);\r",
+									"        }\r",
+									"        pm.collectionVariables.unset(\"list2_id\");\r",
+									"    });\r",
+									"} else {\r",
+									"    console.error(\"[ERROR] Failed to send DELETE request: list2_id is undefined.\");\r",
+									"}"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "apikey",
+							"apikey": [
+								{
+									"key": "value",
+									"value": "{{token}}",
+									"type": "string"
+								},
+								{
+									"key": "key",
+									"value": "Authorization",
+									"type": "string"
+								},
+								{
+									"key": "in",
+									"value": "header",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{url}}/folder/{{folder_id}}/list",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"folder",
+								"{{folder_id}}",
+								"list"
+							]
+						},
+						"description": "Generated from cURL: curl --request GET \\\r\n     --url https://api.clickup.com/api/v2/folder/90156994027/list \\\r\n     --header 'Authorization: pk_74494885_68JNE0UAIR3NW0233TX9IB25VIHCY1N9' \\\r\n     --header 'accept: application/json'"
+					},
+					"response": []
+				},
+				{
+					"name": "getListsWithInvalidFolderId",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"console.info(`[INFO] Received GET response with status ${pm.response.code}`);\r",
+									"console.info(\"[INFO] Starting GET response tests\");\r",
+									"\r",
+									"pm.test(\"Should return 400 when folder_id is invalid\", function () {\r",
+									"    pm.response.to.have.status(400);\r",
+									"    console.info(`[EXPECTED ERROR] GET request failed as expected due to invalid folder_id.\\nResponse body:\\n${pm.response.text()}`);\r",
+									"});\r",
+									"\r",
+									"console.info(\"[INFO] Tests executed\");\r",
+									"pm.collectionVariables.unset(\"invalidFolderId\");"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"const invalidFolderId = pm.variables.replaceIn(\"{{$randomWord}}\");\r",
+									"pm.collectionVariables.set(\"invalidFolderId\", invalidFolderId);\r",
+									"\r",
+									"console.info(`[INFO] Sending GET request with invalid folder_id: \"${invalidFolderId}\"`);"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "apikey",
+							"apikey": [
+								{
+									"key": "value",
+									"value": "{{token}}",
+									"type": "string"
+								},
+								{
+									"key": "key",
+									"value": "Authorization",
+									"type": "string"
+								},
+								{
+									"key": "in",
+									"value": "header",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{url}}/folder/{{invalidFolderId}}/list",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"folder",
+								"{{invalidFolderId}}",
+								"list"
+							]
+						},
+						"description": "Generated from cURL: curl --request GET \\\r\n     --url https://api.clickup.com/api/v2/folder/sdfghjk/list \\\r\n     --header 'Authorization: pk_74494885_68JNE0UAIR3NW0233TX9IB25VIHCY1N9' \\\r\n     --header 'accept: application/json'"
+					},
+					"response": []
+				},
+				{
+					"name": "getListsWithoutAuthHeader",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"const folderId = pm.collectionVariables.get(\"folder_id\");\r",
+									"const randomName = pm.variables.replaceIn(\"{{$randomFirstName}}\");\r",
+									"const url_data = pm.environment.get(\"url\");\r",
+									"\r",
+									"console.info(\"[INFO] Initiating list creation process\");\r",
+									"console.info(`[INFO] Sending POST request for folder_id: ${folderId}`);\r",
+									"\r",
+									"pm.sendRequest({\r",
+									"    url: `${url_data}/folder/${folderId}/list`,\r",
+									"    method: \"POST\",\r",
+									"    header: {\r",
+									"        \"Authorization\": pm.environment.get(\"token\"),\r",
+									"        \"Content-Type\": \"application/json\"\r",
+									"    },\r",
+									"    body: {\r",
+									"        mode: \"raw\",\r",
+									"        raw: JSON.stringify({\"name\": randomName})\r",
+									"    }\r",
+									"}, function (err, res) {\r",
+									"    if (err) {\r",
+									"        console.error(\"[ERROR] Pre-request error:\", err);\r",
+									"    } else if (res.code !== 200) {\r",
+									"        console.error(`[ERROR] Unexpected response code: ${res.code}`, res.text());\r",
+									"    } else {\r",
+									"        const jsonData = res.json();\r",
+									"        pm.collectionVariables.set(\"list_id\", jsonData.id);\r",
+									"        console.log(`[SUCCESS] List was created. list_id: ${jsonData.id}, status code: ${res.code}`);\r",
+									"        console.info(`[INFO] Sending GET request without Authorization token for folder_id: ${folderId}`);\r",
+									"    }\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const url_data = pm.environment.get(\"url\");\r",
+									"const list_id = pm.collectionVariables.get(\"list_id\");\r",
+									"\r",
+									"console.info(`[INFO] Received GET response with status ${pm.response.code}`);\r",
+									"console.info(\"[INFO] Starting GET response tests\");\r",
+									"\r",
+									"pm.test(\"Should return 400 when Authorization header is missing\", function () {\r",
+									"    pm.response.to.have.status(400);\r",
+									"    console.info(`[EXPECTED ERROR] GET request failed as expected due to missing token.\\nResponse body:\\n${pm.response.text()}`);\r",
+									"});\r",
+									"\r",
+									"console.info(\"[INFO] Tests executed\");\r",
+									"\r",
+									"if(list_id){\r",
+									"    console.info(\"[INFO] Sending DELETE request to remove the list\");\r",
+									"    \r",
+									"    pm.sendRequest({\r",
+									"    url: `${url_data}/list/${list_id}`,\r",
+									"    method: \"DELETE\",\r",
+									"    header: {\r",
+									"        \"Authorization\" : pm.environment.get(\"token\")\r",
+									"    }\r",
+									"    }, function(err, res) {\r",
+									"        if (err) {\r",
+									"            console.error(\"[ERROR] Request error:\", err);\r",
+									"        } else if (res.code !== 200) {\r",
+									"            console.error(`[ERROR] Failed to delete list. Status code: ${res.code}`);\r",
+									"        } else {\r",
+									"            console.log(`[SUCCESS] List was deleted. Status code: ${res.code}`);\r",
+									"        }\r",
+									"        pm.collectionVariables.unset(\"list_id\");\r",
+									"});\r",
+									"} else{\r",
+									"    console.error(\"[ERROR] Failed to send DELETE request: list_id is undefined.\");\r",
+									"\r",
+									"}"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{url}}/folder/{{folder_id}}/list",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"folder",
+								"{{folder_id}}",
+								"list"
+							]
+						},
+						"description": "Generated from cURL: curl --request GET \\\r\n     --url https://api.clickup.com/api/v2/folder/90156994027/list \\\r\n     --header 'Authorization: pk_74494885_68JNE0UAIR3NW0233TX9IB25VIHCY1N9' \\\r\n     --header 'accept: application/json'"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "createList",
+			"item": [
+				{
+					"name": "createListWithValidFolderId",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.collectionVariables.unset(\"name\");\r",
+									"\r",
+									"const url_data = pm.environment.get(\"url\");\r",
+									"const list_id = pm.response.json().id;\r",
+									"\r",
+									"console.info(`[INFO] Received POST response with status ${pm.response.code}`);\r",
+									"console.info(\"[INFO] Starting POST response tests\");\r",
+									"\r",
+									"pm.test(\"POST request status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"const Ajv = require('ajv');\r",
+									"const ajv = new Ajv();\r",
+									"\r",
+									"const schema = {\r",
+									"    type: \"object\",\r",
+									"    properties: {\r",
+									"        id: { type: \"string\" },\r",
+									"        name: { type: \"string\" },\r",
+									"        deleted: { type: \"boolean\" },\r",
+									"        orderindex: { type: \"integer\" },\r",
+									"        content: { type: \"string\" },\r",
+									"        priority: { type: [\"null\"] },\r",
+									"        assignee: { type: [\"null\"] },\r",
+									"        due_date: { type: [\"null\", \"string\"] },\r",
+									"        start_date: {\r",
+									"            type: [\"null\", \"string\"]\r",
+									"        },\r",
+									"        folder: {\r",
+									"            type: \"object\",\r",
+									"            properties: {\r",
+									"                id: { type: \"string\" },\r",
+									"                name: { type: \"string\" },\r",
+									"                hidden: { type: \"boolean\" },\r",
+									"                access: { type: \"boolean\"}\r",
+									"            },\r",
+									"            required: [\"id\", \"name\", \"hidden\", \"access\"]\r",
+									"        },\r",
+									"        space: {\r",
+									"            type: \"object\",\r",
+									"            properties: {\r",
+									"                id: { type: \"string\" },\r",
+									"                name: { type: \"string\" },\r",
+									"                access: { type: \"boolean\" }\r",
+									"            },\r",
+									"            required: [\"id\", \"name\", \"access\"],\r",
+									"        },\r",
+									"        inbound_address: { type: \"string\" },\r",
+									"        archived: { type: \"boolean\" },\r",
+									"        override_statuses: { type: \"boolean\" },\r",
+									"        statuses: {\r",
+									"            type: \"array\",\r",
+									"            items: {\r",
+									"                type: \"object\",\r",
+									"                properties: {\r",
+									"                    id: { type: \"string\" },\r",
+									"                    status: { type: \"string\" },\r",
+									"                    orderindex: { type: \"integer\" },\r",
+									"                    color: { type: \"string\" },\r",
+									"                    type: { type: \"string\" },\r",
+									"                    status_group: { type: \"string\" }\r",
+									"                },\r",
+									"                required: [\"id\", \"status\", \"orderindex\", \"color\", \"type\", \"status_group\"],\r",
+									"            }\r",
+									"        },\r",
+									"        permission_level: { type: \"string\" }\r",
+									"    },\r",
+									"    required: [\r",
+									"        \"id\",\r",
+									"        \"name\",\r",
+									"        \"deleted\",\r",
+									"        \"orderindex\",\r",
+									"        \"content\",\r",
+									"        \"priority\",\r",
+									"        \"assignee\",\r",
+									"        \"due_date\",\r",
+									"        \"start_date\",\r",
+									"        \"folder\",\r",
+									"        \"space\",\r",
+									"        \"inbound_address\",\r",
+									"        \"archived\",\r",
+									"        \"override_statuses\",\r",
+									"        \"statuses\",\r",
+									"        \"permission_level\"\r",
+									"    ],\r",
+									"};\r",
+									"\r",
+									"const validate = ajv.compile(schema);\r",
+									"const response = pm.response.json();\r",
+									"\r",
+									"pm.test(\"Schema is valid\", function () {\r",
+									"   const valid = validate(response);\r",
+									"   pm.expect(valid, JSON.stringify(validate.errors)).to.be.true;\r",
+									"   console.log(`[SUCCESS] Schema is valid`);\r",
+									"});\r",
+									"\r",
+									"//Adding test to avoid fake passing in test results\r",
+									"pm.test(\"list_ID should be defined\", function () {\r",
+									"    if (!list_id) {\r",
+									"        console.error(\"[ERROR] list_id is undefined\");\r",
+									"        pm.expect.fail(\"list_id is undefined\");\r",
+									"    } else {\r",
+									"        pm.expect(list_id).to.exist;\r",
+									"    }\r",
+									"});\r",
+									"\r",
+									"console.info(`[INFO] Sending follow-up GET request to confirm creation of list. list_id: ${list_id}`);\r",
+									"\r",
+									"if (list_id) {\r",
+									"    pm.sendRequest({\r",
+									"        url: `${url_data}/list/${list_id}`,\r",
+									"        method: \"GET\",\r",
+									"        header: {\r",
+									"            \"Authorization\": pm.environment.get(\"token\")\r",
+									"        }\r",
+									"    }, function (err, res) {\r",
+									"        pm.test(`GET response body should contain list id : ${list_id}.`, function () {\r",
+									"            if (err) {\r",
+									"                console.error(`[ERROR] Network or unexpected error during GET request: ${err}`);\r",
+									"                pm.expect.fail(\"Network error occurred — can't confirm creation.\");\r",
+									"            } else {\r",
+									"                console.info(`[INFO] GET request status code: ${res.code}`);\r",
+									"                if (res.code === 200) {\r",
+									"                    const jsonData = res.json();\r",
+									"                    pm.expect(jsonData.id, \"Expected GET response list id is equal to POST list id\").to.equal(list_id);\r",
+									"                    console.log(`[SUCCESS] GET response body contains created list id: ${jsonData.id}`);\r",
+									"\r",
+									"                    console.info(\"[INFO] Sending DELETE request to remove the list\");\r",
+									"    \r",
+									"                    pm.sendRequest ({\r",
+									"                        url: `${url_data}/list/${list_id}`,\r",
+									"                        method: \"DELETE\",\r",
+									"                        header: {\r",
+									"                            \"Authorization\" : pm.environment.get(\"token\")\r",
+									"                        }\r",
+									"                    }, function (err, res) {\r",
+									"                        if (err) {\r",
+									"                            console.error(\"[ERROR] Request error:\", err);\r",
+									"                        } else if (res.code !== 200) {\r",
+									"                            console.error(`[ERROR] Failed to delete list. Status code: ${res.code}`);\r",
+									"                        } else {\r",
+									"                            console.log(`[SUCCESS] List was deleted. Status code: ${res.code}`);\r",
+									"                        }\r",
+									"                    });\r",
+									"\r",
+									"                } else {\r",
+									"                    console.error(`[ERROR] Unexpected error. Status code: ${res.code}`);\r",
+									"                    pm.expect.fail(`Expected status code 200 but received ${res.code}`);\r",
+									"                } \r",
+									"            }\r",
+									"        });\r",
+									"    });\r",
+									"} else {\r",
+									"    console.error(\"[ERROR] Failed to send GET request: list_id is undefined.\");\r",
+									"}"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"const folderId = pm.collectionVariables.get(\"folder_id\");\r",
+									"const name = pm.variables.replaceIn(\"{{$randomCity}}\");\r",
+									"pm.collectionVariables.set(\"name\", name);\r",
+									"\r",
+									"console.info(`[INFO] Sending POST request for folder_id: ${folderId}`);"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "apikey",
+							"apikey": [
+								{
+									"key": "value",
+									"value": "{{token}}",
+									"type": "string"
+								},
+								{
+									"key": "key",
+									"value": "Authorization",
+									"type": "string"
+								},
+								{
+									"key": "in",
+									"value": "header",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "accept",
+								"value": "application/json"
+							},
+							{
+								"key": "content-type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"name\": \"{{name}}\"}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url}}/folder/{{folder_id}}/list",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"folder",
+								"{{folder_id}}",
+								"list"
+							]
+						},
+						"description": "Generated from cURL: curl --request POST \\\r\n     --url https://api.clickup.com/api/v2/folder/90156994027/list \\\r\n     --header 'Authorization: pk_74494885_68JNE0UAIR3NW0233TX9IB25VIHCY1N9' \\\r\n     --header 'accept: application/json' \\\r\n     --header 'content-type: application/json' \\\r\n     --data '{\"name\":\"MyNewList\"}'"
+					},
+					"response": []
+				},
+				{
+					"name": "createListWithInvalidFolderId",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"const name = pm.variables.replaceIn(\"{{$randomCity}}\");\r",
+									"const folderId = pm.variables.replaceIn(\"{{$randomWord}}\");\r",
+									"\r",
+									"pm.collectionVariables.set(\"name\", name);\r",
+									"pm.collectionVariables.set(\"folderId\", folderId);\r",
+									"\r",
+									"console.info(`[INFO] Sending POST request with invalid folder_id: ${folderId}`);"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const url_data = pm.environment.get(\"url\");\r",
+									"\r",
+									"console.info(`[INFO] Received POST response with status ${pm.response.code}`);\r",
+									"\r",
+									"pm.test(\"Should return 400 when invalid folder_id\", function () {\r",
+									"    pm.response.to.have.status(400);\r",
+									"    console.info(`[EXPECTED ERROR] POST request failed as expected due to invalid folder_id.\\nResponse body:\\n${pm.response.text()}`);\r",
+									"});\r",
+									"\r",
+									"pm.collectionVariables.unset(\"name\");\r",
+									"pm.collectionVariables.unset(\"folderId\");"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "apikey",
+							"apikey": [
+								{
+									"key": "value",
+									"value": "{{token}}",
+									"type": "string"
+								},
+								{
+									"key": "key",
+									"value": "Authorization",
+									"type": "string"
+								},
+								{
+									"key": "in",
+									"value": "header",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "accept",
+								"value": "application/json"
+							},
+							{
+								"key": "content-type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"name\": \"{{name}}\"}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url}}/folder/{{folderId}}/list",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"folder",
+								"{{folderId}}",
+								"list"
+							]
+						},
+						"description": "Generated from cURL: curl --request POST \\\r\n     --url https://api.clickup.com/api/v2/folder/sdsdsd/list \\\r\n     --header 'Authorization: pk_74494885_68JNE0UAIR3NW0233TX9IB25VIHCY1N9' \\\r\n     --header 'accept: application/json' \\\r\n     --header 'content-type: application/json'"
+					},
+					"response": []
+				},
+				{
+					"name": "createListWithTakenName",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const url_data = pm.environment.get(\"url\");\r",
+									"const list_id = pm.collectionVariables.get(\"list_id\");\r",
+									"\r",
+									"console.info(`[INFO] Received POST response with status ${pm.response.code}`);\r",
+									"\r",
+									"pm.test(\"Should return 400 when name is already taken\", function () {\r",
+									"    pm.response.to.have.status(400);\r",
+									"    console.info(`[EXPECTED ERROR] POST request failed as expected due to name is not unique.\\nResponse body:\\n${pm.response.text()}`);\r",
+									"});\r",
+									"\r",
+									"if (list_id) {\r",
+									"    console.info(\"[INFO] Sending DELETE request to remove the list\");\r",
+									"    \r",
+									"    pm.sendRequest({\r",
+									"    url: `${url_data}/list/${list_id}`,\r",
+									"    method: \"DELETE\",\r",
+									"    header: {\r",
+									"        \"Authorization\" : pm.environment.get(\"token\")\r",
+									"    }\r",
+									"    }, function (err, res) {\r",
+									"        if (err) {\r",
+									"            console.error(\"[ERROR] Request error:\", err);\r",
+									"        } else if (res.code !== 200) {\r",
+									"            console.error(`[ERROR] Failed to delete list. Status code: ${res.code}`);\r",
+									"        } else {\r",
+									"            console.log(`[SUCCESS] List was deleted. Status code: ${res.code}`);\r",
+									"        }\r",
+									"        pm.collectionVariables.unset(\"takenName\");\r",
+									"        pm.collectionVariables.unset(\"list_id\");\r",
+									"    });\r",
+									"} else {\r",
+									"    console.error(\"[ERROR] Failed to send DELETE request: list_id is undefined.\");\r",
+									"}"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"const folderId = pm.collectionVariables.get(\"folder_id\");\r",
+									"const takenName = pm.variables.replaceIn(\"{{$randomFirstName}}\");\r",
+									"const url_data = pm.environment.get(\"url\");\r",
+									"pm.collectionVariables.set(\"takenName\", takenName);\r",
+									"\r",
+									"console.info(`Sending POST request with name: ${takenName}`)\r",
+									"\r",
+									"pm.sendRequest({\r",
+									"    url: `${url_data}/folder/${folderId}/list`,\r",
+									"    method: \"POST\",\r",
+									"    header: {\r",
+									"        \"Authorization\": pm.environment.get(\"token\"),\r",
+									"        \"Content-Type\": \"application/json\"\r",
+									"    },\r",
+									"    body: {\r",
+									"        mode: \"raw\",\r",
+									"        raw: JSON.stringify({\"name\": takenName})\r",
+									"    }\r",
+									"}, function (err, res) {\r",
+									"    if (err) {\r",
+									"        console.error(\"[ERROR] Pre-request error:\", err);\r",
+									"    } else if (res.code !== 200) {\r",
+									"        console.error(`[ERROR] Unexpected response code: ${res.code}`, res.text());\r",
+									"    } else {\r",
+									"        const jsonData = res.json();\r",
+									"        pm.collectionVariables.set(\"list_id\", jsonData.id);\r",
+									"        console.log(`[SUCCESS] List was created. list_name: ${jsonData.name}, status code: ${res.code}`);\r",
+									"        console.info(`[INFO] Sending POST request with taken name: ${takenName}`);\r",
+									"    }\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "apikey",
+							"apikey": [
+								{
+									"key": "value",
+									"value": "{{token}}",
+									"type": "string"
+								},
+								{
+									"key": "key",
+									"value": "Authorization",
+									"type": "string"
+								},
+								{
+									"key": "in",
+									"value": "header",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "accept",
+								"value": "application/json"
+							},
+							{
+								"key": "content-type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"name\": \"{{takenName}}\"}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url}}/folder/{{folder_id}}/list",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"folder",
+								"{{folder_id}}",
+								"list"
+							]
+						},
+						"description": "Generated from cURL: curl --request POST \\\r\n     --url https://api.clickup.com/api/v2/folder/90156994027/list \\\r\n     --header 'Authorization: pk_74494885_68JNE0UAIR3NW0233TX9IB25VIHCY1N9' \\\r\n     --header 'accept: application/json' \\\r\n     --header 'content-type: application/json' \\\r\n     --data '{\"name\":\"MyNewList\"}'"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "getList",
+			"item": [
+				{
+					"name": "getListWithValidListId",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const url_data = pm.environment.get(\"url\");\r",
+									"const list_id = pm.collectionVariables.get(\"list_id\");\r",
+									"\r",
+									"console.info(`[INFO] Received GET response with status ${pm.response.code}`);\r",
+									"console.info(\"[INFO] Starting GET response tests\");\r",
+									"\r",
+									"pm.test(\"GET status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"GET response body contains correct list_id\", function () {\r",
+									"    const jsonData = pm.response.json();\r",
+									"    console.log(\"[DEBUG] list_id from POST response:\", list_id);\r",
+									"    console.log(\"[DEBUG] list_id from GET response:\", jsonData.id);\r",
+									"    pm.expect(list_id, \"Expected list_id to be defined\").to.not.be.undefined;\r",
+									"    pm.expect(jsonData.id, \"Expected list_id from POST response to match list_id from GET response\").to.equal(list_id);\r",
+									"    console.log(`[SUCCESS] Successful GET request to list with id: ${jsonData.id}`);\r",
+									"});\r",
+									"\r",
+									"console.info(\"[INFO] Tests executed\");\r",
+									"\r",
+									"if (list_id) {\r",
+									"    console.info(\"[INFO] Sending DELETE request to remove the list\");\r",
+									"    \r",
+									"    pm.sendRequest({\r",
+									"    url: `${url_data}/list/${list_id}`,\r",
+									"    method: \"DELETE\",\r",
+									"    header: {\r",
+									"        \"Authorization\" : pm.environment.get(\"token\")\r",
+									"    }\r",
+									"    }, function (err, res) {\r",
+									"        if (err) {\r",
+									"            console.error(\"[ERROR] Request error:\", err);\r",
+									"        } else if (res.code !== 200) {\r",
+									"            console.error(`[ERROR] Failed to delete list. Status code: ${res.code}`);\r",
+									"        } else {\r",
+									"            console.log(`[SUCCESS] List was deleted. Status code: ${res.code}`);\r",
+									"        }\r",
+									"        pm.collectionVariables.unset(\"list_id\");\r",
+									"    });\r",
+									"} else {\r",
+									"    console.error(\"[ERROR] Failed to send DELETE request: list_id is undefined.\");\r",
+									"}"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"const folderId = pm.collectionVariables.get(\"folder_id\");\r",
+									"const randomName = pm.variables.replaceIn(\"{{$randomFirstName}}\");\r",
+									"const url_data = pm.environment.get(\"url\");\r",
+									"\r",
+									"console.info(\"[INFO] Initiating list creation process\");\r",
+									"console.info(`[INFO] Sending POST request for folder_id: ${folderId}`);\r",
+									"\r",
+									"pm.sendRequest({\r",
+									"    url: `${url_data}/folder/${folderId}/list`,\r",
+									"    method: \"POST\",\r",
+									"    header: {\r",
+									"        \"Authorization\": pm.environment.get(\"token\"),\r",
+									"        \"Content-Type\": \"application/json\"\r",
+									"    },\r",
+									"    body: {\r",
+									"        mode: \"raw\",\r",
+									"        raw: JSON.stringify({\"name\": randomName})\r",
+									"    }\r",
+									"}, function (err, res) {\r",
+									"    if (err) {\r",
+									"        console.error(\"[ERROR] Pre-request error:\", err);\r",
+									"    } else if (res.code !== 200) {\r",
+									"        console.error(`[ERROR] Unexpected response code: ${res.code}`, res.text());\r",
+									"    } else {\r",
+									"        const jsonData = res.json();\r",
+									"        //pm.collectionVariables.set(\"list_name\", jsonData.name);\r",
+									"        pm.collectionVariables.set(\"list_id\", jsonData.id);\r",
+									"        console.log(`[SUCCESS] List was created. list_id: ${jsonData.id}, status code: ${res.code}`);\r",
+									"        console.info(`[INFO] Sending GET request for list_id: ${jsonData.id}`);\r",
+									"    }\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "apikey",
+							"apikey": [
+								{
+									"key": "value",
+									"value": "{{token}}",
+									"type": "string"
+								},
+								{
+									"key": "key",
+									"value": "Authorization",
+									"type": "string"
+								},
+								{
+									"key": "in",
+									"value": "header",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{url}}/list/{{list_id}}",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"list",
+								"{{list_id}}"
+							]
+						},
+						"description": "Generated from cURL: curl --request GET \\\r\n     --url https://api.clickup.com/api/v2/list/901511201388 \\\r\n     --header 'Authorization: pk_74494885_68JNE0UAIR3NW0233TX9IB25VIHCY1N9' \\\r\n     --header 'accept: application/json'"
+					},
+					"response": []
+				},
+				{
+					"name": "getListWithInvalidListId",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"console.info(`[INFO] Received GET response with status ${pm.response.code}`);\r",
+									"console.info(\"[INFO] Starting GET response tests\");\r",
+									"\r",
+									"pm.test(\"Should return 400 when list_id is invalid\", function () {\r",
+									"    pm.response.to.have.status(400);\r",
+									"    console.info(`[EXPECTED ERROR] GET request failed as expected due to invalid list_id.\\nResponse body:\\n${pm.response.text()}`);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Response body does not contain a valid list ID\", function () {\r",
+									"    const jsonData = pm.response.json();\r",
+									"    pm.expect(jsonData.id, \"Expected no ID in response body\").to.be.undefined;\r",
+									"    console.log(\"[SUCCESS] No list id in response body\");\r",
+									"});\r",
+									"\r",
+									"console.info(\"[INFO] Tests executed\");\r",
+									"pm.collectionVariables.unset(\"invalidListId\");"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"const invalidListId = pm.variables.replaceIn(\"{{$randomWord}}\");\r",
+									"pm.collectionVariables.set(\"invalidListId\", invalidListId);\r",
+									"\r",
+									"console.info(`[INFO] Sending GET request with invalid list_id: \"${invalidListId}\"`);"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "apikey",
+							"apikey": [
+								{
+									"key": "value",
+									"value": "{{token}}",
+									"type": "string"
+								},
+								{
+									"key": "key",
+									"value": "Authorization",
+									"type": "string"
+								},
+								{
+									"key": "in",
+									"value": "header",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{url}}/list/{{invalidListId}}",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"list",
+								"{{invalidListId}}"
+							]
+						},
+						"description": "Generated from cURL: curl --request GET \\\r\n     --url https://api.clickup.com/api/v2/list/901511201388 \\\r\n     --header 'Authorization: pk_74494885_68JNE0UAIR3NW0233TX9IB25VIHCY1N9' \\\r\n     --header 'accept: application/json'"
+					},
+					"response": []
+				},
+				{
+					"name": "getListWithoutAuthHeader",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const url_data = pm.environment.get(\"url\");\r",
+									"const list_id = pm.collectionVariables.get(\"list_id\");\r",
+									"\r",
+									"console.info(`[INFO] Received GET response with status ${pm.response.code}`);\r",
+									"console.info(\"[INFO] Starting GET response tests\");\r",
+									"\r",
+									"pm.test(\"Should return 400 when Authorization header is missing\", function () {\r",
+									"    pm.response.to.have.status(400);\r",
+									"    console.info(`[EXPECTED ERROR] GET request failed as expected due to missing token.\\nResponse body:\\n${pm.response.text()}`);\r",
+									"});\r",
+									"\r",
+									"console.info(\"[INFO] Tests executed\");\r",
+									"\r",
+									"if(list_id){\r",
+									"    console.info(\"[INFO] Sending DELETE request to remove the list\");\r",
+									"    \r",
+									"    pm.sendRequest({\r",
+									"    url: `${url_data}/list/${list_id}`,\r",
+									"    method: \"DELETE\",\r",
+									"    header: {\r",
+									"        \"Authorization\" : pm.environment.get(\"token\")\r",
+									"    }\r",
+									"    }, function(err, res) {\r",
+									"        if (err) {\r",
+									"            console.error(\"[ERROR] Request error:\", err);\r",
+									"        } else if (res.code !== 200) {\r",
+									"            console.error(`[ERROR] Failed to delete list. Status code: ${res.code}`);\r",
+									"        } else {\r",
+									"            console.log(`[SUCCESS] List was deleted. Status code: ${res.code}`);\r",
+									"        }\r",
+									"        pm.collectionVariables.unset(\"list_id\");\r",
+									"});\r",
+									"} else{\r",
+									"    console.error(\"[ERROR] Failed to send DELETE request: list_id is undefined.\");\r",
+									"\r",
+									"}"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"const folderId = pm.collectionVariables.get(\"folder_id\");\r",
+									"const randomName = pm.variables.replaceIn(\"{{$randomFirstName}}\");\r",
+									"const url_data = pm.environment.get(\"url\");\r",
+									"\r",
+									"console.info(\"[INFO] Initiating list creation process\");\r",
+									"console.info(`[INFO] Sending POST request for folder_id: ${folderId}`);\r",
+									"\r",
+									"pm.sendRequest({\r",
+									"    url: `${url_data}/folder/${folderId}/list`,\r",
+									"    method: \"POST\",\r",
+									"    header: {\r",
+									"        \"Authorization\": pm.environment.get(\"token\"),\r",
+									"        \"Content-Type\": \"application/json\"\r",
+									"    },\r",
+									"    body: {\r",
+									"        mode: \"raw\",\r",
+									"        raw: JSON.stringify({\"name\": randomName})\r",
+									"    }\r",
+									"}, function (err, res) {\r",
+									"    if (err) {\r",
+									"        console.error(\"[ERROR] Pre-request error:\", err);\r",
+									"    } else if (res.code !== 200) {\r",
+									"        console.error(`[ERROR] Unexpected response code: ${res.code}`, res.text());\r",
+									"    } else {\r",
+									"        const jsonData = res.json();\r",
+									"        //pm.collectionVariables.set(\"list_name\", jsonData.name);\r",
+									"        pm.collectionVariables.set(\"list_id\", jsonData.id);\r",
+									"        console.log(`[SUCCESS] List was created. list_id: ${jsonData.id}, status code: ${res.code}`);\r",
+									"        console.info(`[INFO] Sending GET request without Authorization token for list_id: ${jsonData.id}`);\r",
+									"    }\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{url}}/list/{{list_id}}",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"list",
+								"{{list_id}}"
+							]
+						},
+						"description": "Generated from cURL: curl --request GET \\\r\n     --url https://api.clickup.com/api/v2/list/901511201388 \\\r\n     --header 'Authorization: pk_74494885_68JNE0UAIR3NW0233TX9IB25VIHCY1N9' \\\r\n     --header 'accept: application/json'"
+					},
+					"response": []
+				},
+				{
+					"name": "getListWithInvalidKey",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const url_data = pm.environment.get(\"url\");\r",
+									"const list_id = pm.collectionVariables.get(\"list_id\");\r",
+									"\r",
+									"console.info(`[INFO] Received GET response with status ${pm.response.code}`);\r",
+									"console.info(\"[INFO] Starting GET response tests\");\r",
+									"\r",
+									"pm.test(\"Should return 401 when Authorization header is invalid\", function () {\r",
+									"    pm.response.to.have.status(401);\r",
+									"    console.info(`[EXPECTED ERROR] GET request failed as expected due to invalid token.\\nResponse body:\\n${pm.response.text()}`);\r",
+									"});\r",
+									"\r",
+									"console.info(\"[INFO] Tests executed\");\r",
+									"\r",
+									"if(list_id){\r",
+									"    console.info(\"[INFO] Sending DELETE request to remove the list\");\r",
+									"    \r",
+									"    pm.sendRequest({\r",
+									"    url: `${url_data}/list/${list_id}`,\r",
+									"    method: \"DELETE\",\r",
+									"    header: {\r",
+									"        \"Authorization\" : pm.environment.get(\"token\")\r",
+									"    }\r",
+									"    }, function(err, res) {\r",
+									"        if (err) {\r",
+									"            console.error(\"[ERROR] Request error:\", err);\r",
+									"        } else if (res.code !== 200) {\r",
+									"            console.error(`[ERROR] Failed to delete list. Status code: ${res.code}`);\r",
+									"        } else {\r",
+									"            console.log(`[SUCCESS] List was deleted. Status code: ${res.code}`);\r",
+									"        }\r",
+									"        pm.collectionVariables.unset(\"list_id\");\r",
+									"});\r",
+									"} else{\r",
+									"    console.error(\"[ERROR] Failed to send DELETE request: list_id is undefined.\");\r",
+									"\r",
+									"}"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"const folderId = pm.collectionVariables.get(\"folder_id\");\r",
+									"const randomName = pm.variables.replaceIn(\"{{$randomFirstName}}\");\r",
+									"const url_data = pm.environment.get(\"url\");\r",
+									"\r",
+									"console.info(\"[INFO] Initiating list creation process\");\r",
+									"console.info(`[INFO] Sending POST request for folder_id: ${folderId}`);\r",
+									"\r",
+									"pm.sendRequest({\r",
+									"    url: `${url_data}/folder/${folderId}/list`,\r",
+									"    method: \"POST\",\r",
+									"    header: {\r",
+									"        \"Authorization\": pm.environment.get(\"token\"),\r",
+									"        \"Content-Type\": \"application/json\"\r",
+									"    },\r",
+									"    body: {\r",
+									"        mode: \"raw\",\r",
+									"        raw: JSON.stringify({\"name\": randomName})\r",
+									"    }\r",
+									"}, function (err, res) {\r",
+									"    if (err) {\r",
+									"        console.error(\"[ERROR] Pre-request error:\", err);\r",
+									"    } else if (res.code !== 200) {\r",
+									"        console.error(`[ERROR] Unexpected response code: ${res.code}`, res.text());\r",
+									"    } else {\r",
+									"        const jsonData = res.json();\r",
+									"        pm.collectionVariables.set(\"list_id\", jsonData.id);\r",
+									"        console.log(`[SUCCESS] List was created. list_id: ${jsonData.id}, status code: ${res.code}`);\r",
+									"        console.info(`[INFO] Sending GET request with invalid token for list_id: ${jsonData.id}`);\r",
+									"    }\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "apikey",
+							"apikey": [
+								{
+									"key": "value",
+									"value": "{{invalidApiKey}}",
+									"type": "string"
+								},
+								{
+									"key": "key",
+									"value": "Authorization",
+									"type": "string"
+								},
+								{
+									"key": "in",
+									"value": "header",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{url}}/list/{{list_id}}",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"list",
+								"{{list_id}}"
+							]
+						},
+						"description": "Generated from cURL: curl --request GET \\\r\n     --url https://api.clickup.com/api/v2/list/901511201388 \\\r\n     --header 'Authorization: pk_74494885_68JNE0UAIR3NW0233TX9IB25VIHCY1N9' \\\r\n     --header 'accept: application/json'"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "updateList",
+			"item": [
+				{
+					"name": "changeListName",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const jsonData = pm.response.json();\r",
+									"const old_name = pm.collectionVariables.get(\"initial_list_name\");\r",
+									"const new_name = jsonData.name;\r",
+									"const list_id = pm.collectionVariables.get(\"list_id\");\r",
+									"const url_data = pm.environment.get(\"url\");\r",
+									"\r",
+									"console.log(`[DEBUG] Initial name: ${old_name}`);\r",
+									"console.log(`[DEBUG] Updated name: ${new_name}`);\r",
+									"console.info(`[INFO] Received PUT response with status ${pm.response.code}`);\r",
+									"\r",
+									"pm.test(\"PUT request status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"List name was changed\", function () {\r",
+									"    pm.expect(new_name).to.not.eql(old_name);\r",
+									"    console.log(`[SUCCESS] List name was successfully changed from ${old_name} to ${new_name}.`);\r",
+									"});\r",
+									"\r",
+									"if (list_id) {\r",
+									"    console.info(\"[INFO] Sending DELETE request to remove the list\");\r",
+									"    \r",
+									"    pm.sendRequest({\r",
+									"    url: `${url_data}/list/${list_id}`,\r",
+									"    method: \"DELETE\",\r",
+									"    header: {\r",
+									"        \"Authorization\" : pm.environment.get(\"token\")\r",
+									"    }\r",
+									"    }, function (err, res) {\r",
+									"        if (err) {\r",
+									"            console.error(\"[ERROR] Request error:\", err);\r",
+									"        } else if (res.code !== 200) {\r",
+									"            console.error(`[ERROR] Failed to delete list. Status code: ${res.code}`);\r",
+									"        } else {\r",
+									"            console.log(`[SUCCESS] List was deleted. Status code: ${res.code}`);\r",
+									"        }\r",
+									"        pm.collectionVariables.unset(\"list_id\");\r",
+									"        pm.collectionVariables.unset(\"initial_list_name\");\r",
+									"    });\r",
+									"} else {\r",
+									"    console.error(\"[ERROR] Failed to send DELETE request: list_id is undefined.\");\r",
+									"}"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"const folderId = pm.collectionVariables.get(\"folder_id\");\r",
+									"const randomName = pm.variables.replaceIn(\"{{$randomFirstName}}\");\r",
+									"const url_data = pm.environment.get(\"url\");\r",
+									"\r",
+									"console.info(\"[INFO] Initiating list creation process\");\r",
+									"console.info(`[INFO] Sending POST request for folder_id: ${folderId}`);\r",
+									"\r",
+									"pm.sendRequest({\r",
+									"    url: `${url_data}/folder/${folderId}/list`,\r",
+									"    method: \"POST\",\r",
+									"    header: {\r",
+									"        \"Authorization\": pm.environment.get(\"token\"),\r",
+									"        \"Content-Type\": \"application/json\"\r",
+									"    },\r",
+									"    body: {\r",
+									"        mode: \"raw\",\r",
+									"        raw: JSON.stringify({\"name\": randomName})\r",
+									"    }\r",
+									"}, function (err, res) {\r",
+									"    if (err) {\r",
+									"        console.error(\"[ERROR] Pre-request error:\", err);\r",
+									"    } else if (res.code !== 200) {\r",
+									"        console.error(`[ERROR] Unexpected response code: ${res.code}`, res.text());\r",
+									"    } else {\r",
+									"        const jsonData = res.json();\r",
+									"        pm.collectionVariables.set(\"list_id\", jsonData.id);\r",
+									"        pm.collectionVariables.set(\"initial_list_name\", jsonData.name);\r",
+									"        console.log(`[SUCCESS] List was created. list_name: ${jsonData.name}, status code: ${res.code}`);\r",
+									"        console.info(`[INFO] Sending PUT request for list_id: ${jsonData.id}`);\r",
+									"    }\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "apikey",
+							"apikey": [
+								{
+									"key": "value",
+									"value": "{{token}}",
+									"type": "string"
+								},
+								{
+									"key": "key",
+									"value": "Authorization",
+									"type": "string"
+								},
+								{
+									"key": "in",
+									"value": "header",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [
+							{
+								"key": "accept",
+								"value": "application/json"
+							},
+							{
+								"key": "content-type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"name\":\"{{$randomAdjective}}\"}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url}}/list/{{list_id}}",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"list",
+								"{{list_id}}"
+							]
+						},
+						"description": "Generated from cURL: curl --request PUT \\\r\n     --url https://api.clickup.com/api/v2/list/901511201868 \\\r\n     --header 'Authorization: pk_74494885_68JNE0UAIR3NW0233TX9IB25VIHCY1N9' \\\r\n     --header 'accept: application/json' \\\r\n     --header 'content-type: application/json' \\\r\n     --data '{\"name\":\"nnewname\"}'"
+					},
+					"response": []
+				},
+				{
+					"name": "changeListContent",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const jsonData = pm.response.json();\r",
+									"const old_content = pm.collectionVariables.get(\"initial_list_content\");\r",
+									"const new_content = jsonData.content;\r",
+									"const initial_name = pm.collectionVariables.get(\"list_name\");\r",
+									"const list_id = pm.collectionVariables.get(\"list_id\");\r",
+									"const url_data = pm.environment.get(\"url\");\r",
+									"\r",
+									"console.log(`[DEBUG] Initial content: ${old_content}`);\r",
+									"console.log(`[DEBUG] Updated content: ${new_content}`);\r",
+									"console.log(`[DEBUG] POST name: ${initial_name}`);\r",
+									"console.log(`[DEBUG] PUT name: ${jsonData.name}`);\r",
+									"\r",
+									"console.info(`[INFO] Received PUT response with status ${pm.response.code}`)\r",
+									"\r",
+									"pm.test(\"PUT response status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"List content is changed\", function () {\r",
+									"    pm.expect(new_content).to.not.eql(old_content);\r",
+									"    console.log(`[SUCCESS] List content was successfully changed from \"${old_content}\" to \"${new_content}\".`);\r",
+									"});\r",
+									"\r",
+									"if (list_id) {\r",
+									"    console.info(\"[INFO] Sending DELETE request to remove the list\");\r",
+									"    \r",
+									"    pm.sendRequest({\r",
+									"    url: `${url_data}/list/${list_id}`,\r",
+									"    method: \"DELETE\",\r",
+									"    header: {\r",
+									"        \"Authorization\" : pm.environment.get(\"token\")\r",
+									"    }\r",
+									"    }, function (err, res) {\r",
+									"        if (err) {\r",
+									"            console.error(\"[ERROR] Request error:\", err);\r",
+									"        } else if (res.code !== 200) {\r",
+									"            console.error(`[ERROR] Failed to delete list. Status code: ${res.code}`);\r",
+									"        } else {\r",
+									"            console.log(`[SUCCESS] List was deleted. Status code: ${res.code}`);\r",
+									"        }\r",
+									"        pm.collectionVariables.unset(\"list_id\");\r",
+									"        pm.collectionVariables.unset(\"initial_list_content\");\r",
+									"        pm.collectionVariables.unset(\"list_name\");\r",
+									"    });\r",
+									"} else {\r",
+									"    console.error(\"[ERROR] Failed to send DELETE request: list_id is undefined.\");\r",
+									"}"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"const folderId = pm.collectionVariables.get(\"folder_id\");\r",
+									"const randomName = pm.variables.replaceIn(\"{{$randomFirstName}}\");\r",
+									"const randomContent = pm.variables.replaceIn(\"{{$randomLoremSentence}}\");\r",
+									"const url_data = pm.environment.get(\"url\");\r",
+									"\r",
+									"console.info(\"[INFO] Initiating list creation process\");\r",
+									"console.info(`[INFO] Sending POST request for folder_id: ${folderId}`);\r",
+									"\r",
+									"pm.sendRequest({\r",
+									"    url: `${url_data}/folder/${folderId}/list`,\r",
+									"    method: \"POST\",\r",
+									"    header: {\r",
+									"        \"Authorization\": pm.environment.get(\"token\"),\r",
+									"        \"Content-Type\": \"application/json\"\r",
+									"    },\r",
+									"    body: {\r",
+									"        mode: \"raw\",\r",
+									"        raw: JSON.stringify({ \"name\": randomName, \"content\": randomContent })\r",
+									"    }\r",
+									"}, function (err, res) {\r",
+									"    if (err) {\r",
+									"        console.error(\"[ERROR] Pre-request error:\", err);\r",
+									"    } else if (res.code !== 200) {\r",
+									"        console.error(`[ERROR] Unexpected response code: ${res.code}`, res.text());\r",
+									"    } else {\r",
+									"        const jsonData = res.json();\r",
+									"        pm.collectionVariables.set(\"list_id\", jsonData.id);\r",
+									"        pm.collectionVariables.set(\"initial_list_content\", jsonData.content);\r",
+									"        pm.collectionVariables.set(\"list_name\", jsonData.name);\r",
+									"        console.log(`[SUCCESS] List was created. list_content: \"${jsonData.content}\"; status code: ${res.code}`);\r",
+									"        console.info(`[INFO] Sending PUT request for list_id: ${jsonData.id}`);\r",
+									"    }\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "apikey",
+							"apikey": [
+								{
+									"key": "value",
+									"value": "{{token}}",
+									"type": "string"
+								},
+								{
+									"key": "key",
+									"value": "Authorization",
+									"type": "string"
+								},
+								{
+									"key": "in",
+									"value": "header",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [
+							{
+								"key": "accept",
+								"value": "application/json"
+							},
+							{
+								"key": "content-type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"name\":\"{{list_name}}\",\r\n    \"content\": \"{{$randomLoremSentence}}\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url}}/list/{{list_id}}",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"list",
+								"{{list_id}}"
+							]
+						},
+						"description": "Generated from cURL: curl --request PUT \\\r\n     --url https://api.clickup.com/api/v2/list/901511201868 \\\r\n     --header 'Authorization: pk_74494885_68JNE0UAIR3NW0233TX9IB25VIHCY1N9' \\\r\n     --header 'accept: application/json' \\\r\n     --header 'content-type: application/json' \\\r\n     --data '{\"name\":\"nnewname\"}'"
+					},
+					"response": []
+				},
+				{
+					"name": "updateListWithInvalidListId",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"console.info(`[INFO] Received PUT response with status ${pm.response.code}`);\r",
+									"\r",
+									"pm.test(\"Should return 400 when list_id is invalid\", function () {\r",
+									"    pm.response.to.have.status(400);\r",
+									"    console.info(`[EXPECTED ERROR] PUT request failed as expected due to invalid list_id.\\nResponse body:\\n${pm.response.text()}`);\r",
+									"});\r",
+									"\r",
+									"pm.collectionVariables.unset(\"invalidListId\");"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"const invalidListId = pm.variables.replaceIn(\"{{$randomWord}}\");\r",
+									"pm.collectionVariables.set(\"invalidListId\", invalidListId);\r",
+									"\r",
+									"console.info(`[INFO] Sending PUT request with invalid list_id: \"${invalidListId}\"`);"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "apikey",
+							"apikey": [
+								{
+									"key": "value",
+									"value": "{{token}}",
+									"type": "string"
+								},
+								{
+									"key": "key",
+									"value": "Authorization",
+									"type": "string"
+								},
+								{
+									"key": "in",
+									"value": "header",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [
+							{
+								"key": "accept",
+								"value": "application/json"
+							},
+							{
+								"key": "content-type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"name\": \"{{$randomCity}}\"\r\n}\r\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url}}/list/{{invalidListId}}",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"list",
+								"{{invalidListId}}"
+							]
+						},
+						"description": "Generated from cURL: curl --request PUT \\\r\n     --url https://api.clickup.com/api/v2/list/9015112018ass68 \\\r\n     --header 'Authorization: pk_74494885_68JNE0UAIR3NW0233TX9IB25VIHCY1N9' \\\r\n     --header 'accept: application/json' \\\r\n     --header 'content-type: application/json' \\\r\n     --data '\r\n{\r\n  \"name\": \"nnewname\",\r\n  \"priority\": 2\r\n}\r\n'"
+					},
+					"response": []
+				},
+				{
+					"name": "updateListWithoutAuthHeader",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const url_data = pm.environment.get(\"url\");\r",
+									"const list_id = pm.collectionVariables.get(\"list_id\");\r",
+									"\r",
+									"console.info(`[INFO] Received PUT response with status ${pm.response.code}`);\r",
+									"\r",
+									"pm.test(\"Should return 400 when Authorization header is missing\", function () {\r",
+									"    pm.response.to.have.status(400);\r",
+									"    console.info(`[EXPECTED ERROR] PUT request failed as expected due to missing token.\\nResponse body:\\n${pm.response.text()}`);\r",
+									"});\r",
+									"\r",
+									"if(list_id){\r",
+									"    console.info(\"[INFO] Sending DELETE request to remove the list\");\r",
+									"    \r",
+									"    pm.sendRequest({\r",
+									"    url: `${url_data}/list/${list_id}`,\r",
+									"    method: \"DELETE\",\r",
+									"    header: {\r",
+									"        \"Authorization\" : pm.environment.get(\"token\")\r",
+									"    }\r",
+									"    }, function(err, res) {\r",
+									"        if (err) {\r",
+									"            console.error(\"[ERROR] Request error:\", err);\r",
+									"        } else if (res.code !== 200) {\r",
+									"            console.error(`[ERROR] Failed to delete list. Status code: ${res.code}`);\r",
+									"        } else {\r",
+									"            console.log(`[SUCCESS] List was deleted. Status code: ${res.code}`);\r",
+									"        }\r",
+									"        pm.collectionVariables.unset(\"list_id\");\r",
+									"});\r",
+									"} else{\r",
+									"    console.error(\"[ERROR] Failed to send DELETE request: list_id is undefined.\");\r",
+									"\r",
+									"}"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"const folderId = pm.collectionVariables.get(\"folder_id\");\r",
+									"const randomName = pm.variables.replaceIn(\"{{$randomFirstName}}\");\r",
+									"const url_data = pm.environment.get(\"url\");\r",
+									"\r",
+									"console.info(\"[INFO] Initiating list creation process\");\r",
+									"console.info(`[INFO] Sending POST request for folder_id: ${folderId}`);\r",
+									"\r",
+									"pm.sendRequest({\r",
+									"    url: `${url_data}/folder/${folderId}/list`,\r",
+									"    method: \"POST\",\r",
+									"    header: {\r",
+									"        \"Authorization\": pm.environment.get(\"token\"),\r",
+									"        \"Content-Type\": \"application/json\"\r",
+									"    },\r",
+									"    body: {\r",
+									"        mode: \"raw\",\r",
+									"        raw: JSON.stringify({\"name\": randomName})\r",
+									"    }\r",
+									"}, function (err, res) {\r",
+									"    if (err) {\r",
+									"        console.error(\"[ERROR] Pre-request error:\", err);\r",
+									"    } else if (res.code !== 200) {\r",
+									"        console.error(`[ERROR] Unexpected response code: ${res.code}`, res.text());\r",
+									"    } else {\r",
+									"        const jsonData = res.json();\r",
+									"        pm.collectionVariables.set(\"list_id\", jsonData.id);\r",
+									"        console.log(`[SUCCESS] List was created. list_id: ${jsonData.id}, status code: ${res.code}`);\r",
+									"        console.info(`[INFO] Sending PUT request without token for list_id: ${jsonData.id}`);\r",
+									"    }\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "PUT",
+						"header": [
+							{
+								"key": "accept",
+								"value": "application/json"
+							},
+							{
+								"key": "content-type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"name\": \"{{$randomAdjective}}\"\r\n}\r\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url}}/list/{{list_id}}",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"list",
+								"{{list_id}}"
+							]
+						},
+						"description": "Generated from cURL: curl --request PUT \\\r\n     --url https://api.clickup.com/api/v2/list/9015112018ass68 \\\r\n     --header 'Authorization: pk_74494885_68JNE0UAIR3NW0233TX9IB25VIHCY1N9' \\\r\n     --header 'accept: application/json' \\\r\n     --header 'content-type: application/json' \\\r\n     --data '\r\n{\r\n  \"name\": \"nnewname\",\r\n  \"priority\": 2\r\n}\r\n'"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "deleteList",
+			"item": [
+				{
+					"name": "deleteCreatedList",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const url_data = pm.environment.get(\"url\");\r",
+									"const list_id = pm.collectionVariables.get(\"list_id\");\r",
+									"\r",
+									"console.info(`[INFO] Received DELETE response with status ${pm.response.code}`);\r",
+									"console.info(\"[INFO] Starting DELETE response tests\");\r",
+									"\r",
+									"pm.test(\"DELETE request status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"    console.log(`[SUCCESS] DELETE request status code 200`);\r",
+									"});\r",
+									"\r",
+									"console.info(`[INFO] Sending follow-up GET request to confirm deletion of list. list_id: ${list_id}`);\r",
+									"\r",
+									"//Adding test to avoid fake passing in test results\r",
+									"pm.test(\"list_ID should be defined\", function () {\r",
+									"    if (!list_id) {\r",
+									"        console.error(\"[ERROR] list_id is undefined\");\r",
+									"        pm.expect.fail(\"list_id is undefined\");\r",
+									"    } else {\r",
+									"        pm.expect(list_id).to.exist;\r",
+									"    }\r",
+									"});\r",
+									"\r",
+									"if (list_id) {\r",
+									"    pm.sendRequest({\r",
+									"        url: `${url_data}/list/${list_id}`,\r",
+									"        method: \"GET\",\r",
+									"        header: {\r",
+									"            \"Authorization\": pm.environment.get(\"token\")\r",
+									"        }\r",
+									"    }, function (err, res) {\r",
+									"        pm.test(\"GET response body should contain deleted : true.\", function () {\r",
+									"            if (err) {\r",
+									"                console.error(`[ERROR] Network or unexpected error during GET request: ${err}`);\r",
+									"                pm.expect.fail(\"Network error occurred — can't confirm deletion.\");\r",
+									"            } else {\r",
+									"                console.info(`[INFO] GET request status code: ${res.code}`);\r",
+									"                if (res.code === 200) {\r",
+									"                    console.info(`[INFO] ClickUp resources still available from Trash for 30 days`);\r",
+									"                    const jsonData = res.json();\r",
+									"                    pm.expect(jsonData.deleted, \"Expected GET response body contains deleted: true\").to.be.true;\r",
+									"                    console.log(`[SUCCESS] GET response body contains deleted: ${jsonData.deleted}`);\r",
+									"                } else {\r",
+									"                    console.error(`[ERROR] Unexpected status code from GET request: ${res.code}`);\r",
+									"                    pm.expect.fail(`Expected status code 200 but received ${res.code}`);\r",
+									"                } \r",
+									"            }\r",
+									"        });\r",
+									"\r",
+									"        pm.collectionVariables.unset(\"list_id\");\r",
+									"    });\r",
+									"} else {\r",
+									"    console.error(\"[ERROR] Failed to send GET request: list_id is undefined.\");\r",
+									"}"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"const folderId = pm.collectionVariables.get(\"folder_id\");\r",
+									"const randomName = pm.variables.replaceIn(\"{{$randomFirstName}}\");\r",
+									"const url_data = pm.environment.get(\"url\");\r",
+									"\r",
+									"console.info(\"[INFO] Initiating list creation process\");\r",
+									"console.info(`[INFO] Sending POST request for folder_id: ${folderId}`);\r",
+									"\r",
+									"pm.sendRequest({\r",
+									"    url: `${url_data}/folder/${folderId}/list`,\r",
+									"    method: \"POST\",\r",
+									"    header: {\r",
+									"        \"Authorization\": pm.environment.get(\"token\"),\r",
+									"        \"Content-Type\": \"application/json\"\r",
+									"    },\r",
+									"    body: {\r",
+									"        mode: \"raw\",\r",
+									"        raw: JSON.stringify({\"name\": randomName})\r",
+									"    }\r",
+									"}, function (err, res) {\r",
+									"    if (err) {\r",
+									"        console.error(\"[ERROR] Pre-request error:\", err);\r",
+									"    } else if (res.code !== 200) {\r",
+									"        console.error(`[ERROR] Unexpected response code: ${res.code}`, res.text());\r",
+									"    } else {\r",
+									"        const jsonData = res.json();\r",
+									"        pm.collectionVariables.set(\"list_id\", jsonData.id);\r",
+									"        console.log(`[SUCCESS] List was created. list_id: ${jsonData.id}, status code: ${res.code}`);\r",
+									"        console.info(`[INFO] POST response body contains deleted: ${jsonData.deleted}`);\r",
+									"        console.info(`[INFO] Sending DELETE request for list_id: ${jsonData.id}`);\r",
+									"    }\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "apikey",
+							"apikey": [
+								{
+									"key": "value",
+									"value": "{{token}}",
+									"type": "string"
+								},
+								{
+									"key": "key",
+									"value": "Authorization",
+									"type": "string"
+								},
+								{
+									"key": "in",
+									"value": "header",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{url}}/list/{{list_id}}",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"list",
+								"{{list_id}}"
+							]
+						},
+						"description": "Generated from cURL: curl --request DELETE \\\r\n     --url https://api.clickup.com/api/v2/list/901511199653 \\\r\n     --header 'Authorization: pk_74494885_68JNE0UAIR3NW0233TX9IB25VIHCY1N9' \\\r\n     --header 'accept: application/json'"
+					},
+					"response": []
+				},
+				{
+					"name": "deleteListWithoutAuth",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const url_data = pm.environment.get(\"url\");\r",
+									"const list_id = pm.collectionVariables.get(\"list_id\");\r",
+									"\r",
+									"console.info(`[INFO] Received DELETE response with status ${pm.response.code}`);\r",
+									"console.info(\"[INFO] Starting DELETE response tests\");\r",
+									"\r",
+									"pm.test(\"Should return 400 when deleting without Authorization token\", function () {\r",
+									"    pm.response.to.have.status(400);\r",
+									"    console.info(`[EXPECTED ERROR] DELETE request failed as expected due to missing token.\\nResponse body:\\n${pm.response.text()}`)\r",
+									"});\r",
+									"\r",
+									"console.info(\"[INFO] Tests executed\");\r",
+									"\r",
+									"if(list_id){\r",
+									"    console.info(\"[INFO] Sending DELETE request to remove the list\");\r",
+									"    \r",
+									"    pm.sendRequest({\r",
+									"    url: `${url_data}/list/${list_id}`,\r",
+									"    method: \"DELETE\",\r",
+									"    header: {\r",
+									"        \"Authorization\" : pm.environment.get(\"token\")\r",
+									"    }\r",
+									"    }, function(err, res) {\r",
+									"        if (err) {\r",
+									"            console.error(\"[ERROR] Request error:\", err);\r",
+									"        } else if (res.code !== 200) {\r",
+									"            console.error(`[ERROR] Failed to delete list. Status code: ${res.code}`);\r",
+									"        } else {\r",
+									"            console.log(`[SUCCESS] List was deleted. Status code: ${res.code}`);\r",
+									"        }\r",
+									"        pm.collectionVariables.unset(\"list_id\");\r",
+									"});\r",
+									"} else{\r",
+									"    console.error(\"[ERROR] Failed to send DELETE request: list_id is undefined.\");\r",
+									"\r",
+									"}"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"const folderId = pm.collectionVariables.get(\"folder_id\");\r",
+									"const randomName = pm.variables.replaceIn(\"{{$randomFirstName}}\");\r",
+									"const url_data = pm.environment.get(\"url\");\r",
+									"\r",
+									"console.info(\"[INFO] Initiating list creation process\");\r",
+									"console.info(`[INFO] Sending POST request for folder_id: ${folderId}`);\r",
+									"\r",
+									"pm.sendRequest({\r",
+									"    url: `${url_data}/folder/${folderId}/list`,\r",
+									"    method: \"POST\",\r",
+									"    header: {\r",
+									"        \"Authorization\": pm.environment.get(\"token\"),\r",
+									"        \"Content-Type\": \"application/json\"\r",
+									"    },\r",
+									"    body: {\r",
+									"        mode: \"raw\",\r",
+									"        raw: JSON.stringify({\"name\": randomName})\r",
+									"    }\r",
+									"}, function (err, res) {\r",
+									"    if (err) {\r",
+									"        console.error(\"[ERROR] Pre-request error:\", err);\r",
+									"    } else if (res.code !== 200) {\r",
+									"        console.error(`[ERROR] Unexpected response code: ${res.code}`, res.text());\r",
+									"    } else {\r",
+									"        const jsonData = res.json();\r",
+									"        pm.collectionVariables.set(\"list_id\", jsonData.id);\r",
+									"        console.log(`[SUCCESS] List was created. list_id: ${jsonData.id}, status code: ${res.code}`);\r",
+									"        console.info(`[INFO] Sending DELETE request without Authorization header for list_id: ${jsonData.id}`);\r",
+									"    }\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{url}}/list/{{list_id}}",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"list",
+								"{{list_id}}"
+							]
+						},
+						"description": "Generated from cURL: curl --request DELETE \\\r\n     --url https://api.clickup.com/api/v2/list/901511199653 \\\r\n     --header 'Authorization: pk_74494885_68JNE0UAIR3NW0233TX9IB25VIHCY1N9' \\\r\n     --header 'accept: application/json'"
+					},
+					"response": []
+				},
+				{
+					"name": "deleteListWithInvalidKey",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const url_data = pm.environment.get(\"url\");\r",
+									"const list_id = pm.collectionVariables.get(\"list_id\");\r",
+									"\r",
+									"console.info(`[INFO] Received DELETE response with status ${pm.response.code}`);\r",
+									"console.info(\"[INFO] Starting DELETE response tests\");\r",
+									"\r",
+									"pm.test(\"Should return 401 when deleting with invalid token\", function () {\r",
+									"    pm.response.to.have.status(401);\r",
+									"    console.info(`[EXPECTED ERROR] DELETE request failed as expected due to invalid token.\\nResponse body:\\n${pm.response.text()}`)\r",
+									"});\r",
+									"\r",
+									"console.info(\"[INFO] Tests executed\");\r",
+									"\r",
+									"if(list_id){\r",
+									"    console.info(\"[INFO] Sending DELETE request to remove the list\");\r",
+									"    \r",
+									"    pm.sendRequest({\r",
+									"        url: `${url_data}/list/${list_id}`,\r",
+									"        method: \"DELETE\",\r",
+									"        header: {\r",
+									"            \"Authorization\" : pm.environment.get(\"token\")\r",
+									"        }\r",
+									"    }, function(err, res) {\r",
+									"        if (err) {\r",
+									"            console.error(\"[ERROR] Request error:\", err);\r",
+									"        } else if (res.code !== 200) {\r",
+									"            console.error(`[ERROR] Failed to delete list. Status code: ${res.code}`);\r",
+									"        } else {\r",
+									"            console.log(`[SUCCESS] List was deleted. Status code: ${res.code}`);\r",
+									"        }\r",
+									"        pm.collectionVariables.unset(\"list_id\");\r",
+									"});\r",
+									"} else{\r",
+									"    console.error(\"[ERROR] Failed to send DELETE request: list_id is undefined.\");\r",
+									"\r",
+									"}"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"const folderId = pm.collectionVariables.get(\"folder_id\");\r",
+									"const randomName = pm.variables.replaceIn(\"{{$randomFirstName}}\");\r",
+									"const url_data = pm.environment.get(\"url\");\r",
+									"\r",
+									"console.info(\"[INFO] Initiating list creation process\");\r",
+									"console.info(`[INFO] Sending POST request for folder_id: ${folderId}`);\r",
+									"\r",
+									"pm.sendRequest({\r",
+									"    url: `${url_data}/folder/${folderId}/list`,\r",
+									"    method: \"POST\",\r",
+									"    header: {\r",
+									"        \"Authorization\": pm.environment.get(\"token\"),\r",
+									"        \"Content-Type\": \"application/json\"\r",
+									"    },\r",
+									"    body: {\r",
+									"        mode: \"raw\",\r",
+									"        raw: JSON.stringify({\"name\": randomName})\r",
+									"    }\r",
+									"}, function (err, res) {\r",
+									"    if (err) {\r",
+									"        console.error(\"[ERROR] Pre-request error:\", err);\r",
+									"    } else if (res.code !== 200) {\r",
+									"        console.error(`[ERROR] Unexpected response code: ${res.code}`, res.text());\r",
+									"    } else {\r",
+									"        const jsonData = res.json();\r",
+									"        pm.collectionVariables.set(\"list_id\", jsonData.id);\r",
+									"        console.log(`[SUCCESS] List was created. list_id: ${jsonData.id}, status code: ${res.code}`);\r",
+									"        console.info(`[INFO] Sending DELETE request with invalid token for list_id: ${jsonData.id}`);\r",
+									"    }\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "apikey",
+							"apikey": [
+								{
+									"key": "value",
+									"value": "{{invalidApiKey}}",
+									"type": "string"
+								},
+								{
+									"key": "key",
+									"value": "Authorization",
+									"type": "string"
+								},
+								{
+									"key": "in",
+									"value": "header",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{url}}/list/{{list_id}}",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"list",
+								"{{list_id}}"
+							]
+						},
+						"description": "Generated from cURL: curl --request DELETE \\\r\n     --url https://api.clickup.com/api/v2/list/901511199653 \\\r\n     --header 'Authorization: pk_74494885_68JNE0UAIR3NW0233TX9IB25VIHCY1N9' \\\r\n     --header 'accept: application/json'"
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "folder_id",
+			"value": "90156994027",
+			"type": "string"
+		}
+	]
+}
