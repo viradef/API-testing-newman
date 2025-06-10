@@ -12,8 +12,8 @@ jobs:
       - run:
           name: Run Postman Tests
           command: |
-            newman run path/to/your_collection.json \
-              --environment path/to/your_environment.json \
+            newman run Lists.postman_collection.json \
+              --environment Production.postman_environment.json \
               --reporters cli,json,html \
               --reporter-html-export newman/report.html
       - store_artifacts:
