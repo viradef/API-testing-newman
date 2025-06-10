@@ -1,0 +1,27 @@
+version: 2.1
+
+jobs:
+  test:
+    docker:
+      - image: cimg/node:18.17
+    steps:
+      - checkout
+      - run:
+          name: Install Newman
+          command: npm install -g newman
+      - run:
+          name: Run Postman Tests
+          command: |
+            newman run path/to/your_collection.json \
+              --environment path/to/your_environment.json \
+              --reporters cli,json,html \
+              --reporter-html-export newman/report.html
+      - store_artifacts:
+          path: newman/report.html
+          destination: postman-report
+
+workflows:
+  version: 2
+  test_and_deploy:
+    jobs:
+      - test
